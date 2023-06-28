@@ -130,7 +130,7 @@ router.post<IRequest, CF>("/", async (
       );
       let code: string = "";
       if (listenerResponse.status == 400) {
-        const result = await processResponse(listenerResponse);
+        const result: any = await parseXml(await listenerResponse.text());
         code = result.ErrorResponse.Error[0].Code[0];
         if (code == "PriorityInUse") {
           console.log(`Priority ${priority} in use`);

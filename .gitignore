@@ -1,3 +1,6 @@
+# Cloudflare
+.dev.vars
+
 # Logs
 logs
 *.log

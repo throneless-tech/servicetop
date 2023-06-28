@@ -1,0 +1,63 @@
+name = "servicetop"
+main = "src/worker.ts"
+compatibility_date = "2023-05-26"
+node_compat = true
+
+# # KV Namespace binding - For more information: https://developers.cloudflare.com/workers/runtime-apis/kv
+[[kv_namespaces]]
+binding = "state"
+# preview_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+preview_id = "2ab5d88ae4b9402da70762724aa89089"
+id = "18750542e083458e89dfdc9494fce35c"
+
+# # Durable Object binding - For more information: https://developers.cloudflare.com/workers/runtime-apis/durable-objects
+# [[durable_objects]]
+# binding = "MY_DURABLE_OBJECT"
+# class_name = "MyDurableObject"
+
+# # Bucket binding - For more information: https://developers.cloudflare.com/workers/runtime-apis/kv#bucket
+# [[buckets]]
+# binding = "MY_BUCKET"
+# name = "my-bucket"
+# bucket_id = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+
+# # Service binding - For more information: https://developers.cloudflare.com/workers/platform/services
+# [[routes]]
+# binding = "MY_SERVICE"
+# pattern = "/api/*"
+# script = "api.js"
+
+# # Queue binding - For more information: https://developers.cloudflare.com/workers/runtime-apis/queues
+# [[queues]]
+# binding = "MY_QUEUE"
+# name = "my-queue"
+# zone_id = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+
+# [env.production]
+# MY_VARIABLE = "production_value"
+
+# Needed secrets:
+# - AWS_ACCESS_ID
+# - AWS_ACCESS_SECRET
+# - AWS_ELB_VPC_ID
+# - AWS_ELB_LISTENER_ARN
+# - AWS_ELB_TOKEN
+# - AWS_ELB_SECURITY_GROUP
+# - AWS_REGION
+# - AWS_ECS_EXECUTION_ROLE_ARN
+# - AWS_ECS_CLUSTER_NAME
+# - CF_TARGET
+# - CF_TOKEN
+# - CF_KEY
+# - CF_EMAIL
+# - CF_ZONE_ID
+# - WORKER_AUTH_KEY
+# - WORKER_AUTH_VALUE
+# - PARENT_DOMAIN
+
+# [env.staging]
+# MY_VARIABLE = "staging_value"
+
+# [env.shared]
+# SHARED_VARIABLE = "shared_value"

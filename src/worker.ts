@@ -25,11 +25,17 @@ type Env = {
   CF_KEY: string;
   CF_EMAIL: string;
   CF_ZONE_ID: string;
+  OXYLABS_USER: string;
+  OXYLABS_PASS: string;
   PARENT_DOMAIN: string;
   WORKER_AUTH_KEY: string;
   WORKER_AUTH_VALUE: string;
   state: any;
 };
+
+export type ServiceRequest = {
+  exit: string;
+} & IRequest;
 
 export type CF = [env: Env, context: ExecutionContext];
 

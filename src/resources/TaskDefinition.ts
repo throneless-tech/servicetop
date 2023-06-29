@@ -6,6 +6,9 @@ export class TaskDefinition extends Resource {
     protected readonly region: string,
     private readonly fsid: string,
     private readonly execRoleArn: string,
+    private readonly proxyUser: string,
+    private readonly proxyPass: string,
+    private readonly proxyExit: string,
   ) {
     super(name, region);
   }
@@ -60,6 +63,18 @@ export class TaskDefinition extends Resource {
           {
             "name": "PGID",
             "value": "1000",
+          },
+          {
+            "name": "OXYLABS_USER",
+            "value": this.proxyUser,
+          },
+          {
+            "name": "OXYLABS_PASS",
+            "value": this.proxyPass,
+          },
+          {
+            "name": "OXYLABS_EXIT",
+            "value": this.proxyExit,
           },
         ],
         "mountPoints": [

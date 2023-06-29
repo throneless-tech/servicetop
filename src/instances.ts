@@ -2,7 +2,7 @@ import { AwsClient } from "aws4fetch";
 import { AddDNSRecord, DNSRecord } from "@e9x/cloudflare/v4";
 import Cloudflare from "@e9x/cloudflare";
 import generate from "hostname-generator";
-import { error, IRequest, Router } from "itty-router";
+import { error, Router } from "itty-router";
 import { parseStringPromise as parseXml } from "xml2js";
 import {
   FileSystem,
@@ -14,7 +14,7 @@ import {
   TargetGroup,
   TaskDefinition,
 } from "./resources";
-import { CF } from "./worker";
+import { CF, ServiceRequest } from "./worker";
 
 const NAME = generate({ words: 3 }).dashed;
 
@@ -59,7 +59,7 @@ async function processResponse(response: Response) {
 
 export const router = Router({ base: "/api/v1/instances" });
 
-router.post<IRequest, CF>("/", async (
+router.post<ServiceRequest, CF>("/", async (
   request,
   env,
 ) => {
@@ -155,6 +155,9 @@ router.post<IRequest, CF>("/", async (
         env.AWS_REGION,
         fileSystem.FileSystemId,
         env.AWS_ECS_EXECUTION_ROLE_ARN,
+        env.OXYLABS_USER,
+        env.OXYLABS_PASS,
+        request.exit,
       ),
     ).then(processResponse);
     responses.push(taskDefinition);

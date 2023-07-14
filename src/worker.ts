@@ -8,7 +8,7 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
-import { error, html, IRequest, json, Router } from "itty-router";
+import { error, html, IRequest, json, Router, withParams } from "itty-router";
 import { router as instancesRouter } from "./instances";
 
 type Env = {
@@ -34,12 +34,14 @@ type Env = {
 };
 
 export type ServiceRequest = {
-  exit: string;
+  query: {
+    exit: string;
+  };
 } & IRequest;
 
 export type CF = [env: Env, context: ExecutionContext];
 
-const withValidAuth = (request: IRequest, env: Env) => {
+const withValidAuth = (request: ServiceRequest, env: Env) => {
   const psk = request.headers.get(env.WORKER_AUTH_KEY);
 
   if (psk !== env.WORKER_AUTH_VALUE) {
@@ -51,7 +53,8 @@ const withValidAuth = (request: IRequest, env: Env) => {
 const router = Router(); // Export a default object containing event handlers
 
 router
-  .all<IRequest, CF>("*", withValidAuth)
+  .all<ServiceRequest, CF>("*", withValidAuth)
+  .all("*", withParams)
   .all("/api/v1/instances/*", instancesRouter.handle)
   .get("/", () => {
     return html(

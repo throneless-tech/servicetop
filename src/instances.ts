@@ -66,6 +66,63 @@ router.post<ServiceRequest, CF>("/", async (
   const responses: any[] = [];
   console.log(`Starting deployment of instance '${NAME}''`);
 
+  if (
+    !`us_alabama
+us_alaska
+us_arizona
+us_arkansas
+us_california
+us_colorado
+us_connecticut
+us_delaware
+us_florida
+us_georgia
+us_hawaii
+us_idaho
+us_illinois
+us_indiana
+us_iowa
+us_kansas
+us_kentucky
+us_louisiana
+us_maine
+us_maryland
+us_massachusetts
+us_michigan
+us_minnesota
+us_mississippi
+us_missouri
+us_montana
+us_nebraska
+us_nevada
+us_new_hampshire
+us_new_jersey
+us_new_mexico
+us_new_york
+us_north_carolina
+us_north_dakota
+us_ohio
+us_oklahoma
+us_oregon
+us_pennsylvania
+us_rhode_island
+us_south_carolina
+us_south_dakota
+us_tennessee
+us_texas
+us_utah
+us_vermont
+us_virginia
+us_washington
+us_west_virginia
+us_wisconsin
+us_wyoming`
+      .split("\n")
+      .includes(request.query.exit)
+  ) {
+    return error(400, `Invalid proxy exit: ${request.query.exit}`);
+  }
+
   const aws = new AwsClient({
     accessKeyId: env.AWS_ACCESS_ID,
     secretAccessKey: env.AWS_ACCESS_SECRET,
@@ -157,7 +214,7 @@ router.post<ServiceRequest, CF>("/", async (
         env.AWS_ECS_EXECUTION_ROLE_ARN,
         env.OXYLABS_USER,
         env.OXYLABS_PASS,
-        request.exit,
+        request.query.exit,
       ),
     ).then(processResponse);
     responses.push(taskDefinition);

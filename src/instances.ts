@@ -67,7 +67,7 @@ router.post<ServiceRequest, CF>("/", async (
   console.log(`Starting deployment of instance '${NAME}''`);
 
   if (
-    !`us_alabama
+    !(!request.query.exit || `us_alabama
 us_alaska
 us_arizona
 us_arkansas
@@ -118,7 +118,7 @@ us_west_virginia
 us_wisconsin
 us_wyoming`
       .split("\n")
-      .includes(request.query.exit)
+      .includes(request.query.exit))
   ) {
     return error(400, `Invalid proxy exit: ${request.query.exit}`);
   }

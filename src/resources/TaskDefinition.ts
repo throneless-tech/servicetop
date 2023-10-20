@@ -132,8 +132,8 @@ export class TaskDefinition extends Resource {
       "requiresCompatibilities": [
         "FARGATE",
       ],
-      "cpu": "2048",
-      "memory": "16384",
+      "cpu": "1024",
+      "memory": "8192",
       "runtimePlatform": {
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX",

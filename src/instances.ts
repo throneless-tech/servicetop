@@ -64,7 +64,8 @@ router.post<ServiceRequest, CF>("/", async (
   env,
 ) => {
   const responses: any[] = [];
-  console.log(`Starting deployment of instance '${NAME}''`);
+  const name = request.query.name || NAME;
+  console.log(`Starting deployment of instance '${name}''`);
 
   if (
     !(!request.query.exit || `us_alabama
@@ -118,7 +119,7 @@ us_west_virginia
 us_wisconsin
 us_wyoming`
       .split("\n")
-      .includes(request.query.exit))
+      .includes(request.query.exit) || request.query.exit.startsWith("cc-"))
   ) {
     return error(400, `Invalid proxy exit: ${request.query.exit}`);
   }
@@ -133,13 +134,14 @@ us_wyoming`
     console.log("Deploying FileSystem");
     fileSystem = await doFetch(
       aws,
-      new FileSystem(NAME, env.AWS_REGION),
+      new FileSystem(name, env.AWS_REGION),
     )
       .then(
         processResponse,
       );
     responses.push(fileSystem);
   } catch (err) {
+    console.log("ERROR:", err);
     return error(502, err as Error);
   }
 
@@ -148,10 +150,11 @@ us_wyoming`
     console.log("Deploying TargetGroup");
     targetGroup = await doFetch(
       aws,
-      new TargetGroup(NAME, env.AWS_REGION, env.AWS_ELB_VPC_ID),
+      new TargetGroup(name, env.AWS_REGION, env.AWS_ELB_VPC_ID),
     ).then(processResponse);
     responses.push(targetGroup);
   } catch (err) {
+    console.log("ERROR:", err);
     return error(502, err as Error);
   }
 
@@ -160,7 +163,7 @@ us_wyoming`
       .TargetGroups[0].member[0].TargetGroupArn[0];
 
   const listenerRule = new ListenerRule(
-    `${NAME}.${env.PARENT_DOMAIN}`,
+    `${name}.${env.PARENT_DOMAIN}`,
     env.AWS_REGION,
     env.AWS_ELB_LISTENER_ARN,
     targetGroupArn,
@@ -196,6 +199,23 @@ us_wyoming`
         }
       }
       responses.push(await processResponse(listenerResponse));
+      // Temporary hack for migration
+      if (env.PARENT_DOMAIN2) {
+        const listenerRule2 = new ListenerRule(
+          `${name}.${env.PARENT_DOMAIN2}`,
+          env.AWS_REGION,
+          env.AWS_ELB_LISTENER_ARN,
+          targetGroupArn,
+          env.AWS_ELB_TOKEN,
+        );
+        priority += 1;
+        const listenerResponse2 = await doFetch(
+          aws,
+          listenerRule2,
+          listenerRule2.url(priority),
+        );
+        responses.push(await processResponse(listenerResponse2));
+      }
       break;
     }
     await env.state.put("priority", priority + 1);
@@ -208,7 +228,7 @@ us_wyoming`
     const taskDefinition = await doFetch(
       aws,
       new TaskDefinition(
-        NAME,
+        name,
         env.AWS_REGION,
         fileSystem.FileSystemId,
         env.AWS_ECS_EXECUTION_ROLE_ARN,
@@ -226,7 +246,7 @@ us_wyoming`
   try {
     console.log("Retrieving subnet IDs");
     const subnet = new Subnet(
-      NAME,
+      name,
       env.AWS_REGION,
       env.AWS_ELB_VPC_ID,
     );
@@ -249,31 +269,48 @@ us_wyoming`
 
   try {
     const mountTarget = new MountTarget(
-      NAME,
+      name,
       env.AWS_REGION,
       fileSystem.FileSystemId,
-      subnetIds[Math.floor(Math.random() * subnetIds.length)],
+      subnetIds[0],
+      env.AWS_ELB_SECURITY_GROUP_ID,
+    );
+    const mountTarget2 = new MountTarget(
+      name,
+      env.AWS_REGION,
+      fileSystem.FileSystemId,
+      subnetIds[1],
+      env.AWS_ELB_SECURITY_GROUP_ID,
     );
     console.log("Deploying MountTarget");
-    let mountTargetResponse;
+    let mountTargetResponse, mountTargetResponse2;
     while (true) {
       mountTargetResponse = await doFetch(
         aws,
         mountTarget,
       );
       let code: string = "";
-      if (mountTargetResponse.status == 409) {
-        const result: any = await mountTargetResponse.json();
+      const status: any = mountTargetResponse.status;
+      const result: any = await mountTargetResponse.json();
+      console.log("MountTarget result:", result);
+      if (status == 409) {
+        //const result: any = await mountTargetResponse.json();
         code = result.ErrorCode;
         if (code == "IncorrectFileSystemLifeCycleState") {
           console.log(`Filesystem ${fileSystem.FileSystemId} not ready`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
           continue;
         }
       }
+      mountTargetResponse2 = await doFetch(
+        aws,
+        mountTarget2,
+      );
       break;
     }
 
     responses.push(processResponse(mountTargetResponse));
+    responses.push(processResponse(mountTargetResponse2));
   } catch (err) {
     return error(502, err as Error);
   }
@@ -283,10 +320,10 @@ us_wyoming`
     const service = await doFetch(
       aws,
       new Service(
-        NAME,
+        name,
         env.AWS_REGION,
         env.AWS_ECS_CLUSTER_NAME,
-        NAME,
+        name,
         targetGroupArn,
         subnetIds,
         env.AWS_ELB_SECURITY_GROUP_ID,
@@ -304,17 +341,19 @@ us_wyoming`
       `v4/zones/${env.CF_ZONE_ID}/dns_records`,
       {
         type: "CNAME",
-        name: `${NAME}.cuckoo`,
+        name: `${name}.cuckoo`,
         content: `${env.CF_TARGET}`,
         proxied: true,
         ttl: 1,
       },
     );
+
     responses.push(record);
   } catch (err) {
+    console.log("Error:", err);
     return error(502, err as Error);
   }
 
-  return { name: NAME, responses: responses };
+  return { name: name, responses: responses };
 })
   .all("*", () => error(404));

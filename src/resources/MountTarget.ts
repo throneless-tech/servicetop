@@ -6,6 +6,7 @@ export class MountTarget extends Resource {
     protected readonly region: string,
     private readonly fsid: string,
     private readonly subnetId: string,
+    private readonly securityGroup: string,
   ) {
     super(name, region);
   }
@@ -18,6 +19,7 @@ export class MountTarget extends Resource {
     return JSON.stringify({
       SubnetId: this.subnetId,
       FileSystemId: this.fsid,
+      SecurityGroups: [this.securityGroup]
     });
   }
 }

@@ -38,7 +38,7 @@ export class Service extends Resource {
       }],
       networkConfiguration: {
         awsvpcConfiguration: {
-          assignPublicIp: "ENABLED",
+          assignPublicIp: "DISABLED",
           subnets: this.subnetIds,
           securityGroups: [this.securityGroup],
         },

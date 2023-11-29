@@ -335,7 +335,7 @@ us_wyoming`
   }
 
   try {
-    console.log("Deploying Cloudflare record");
+    console.log(`Deploying Cloudflare record ${name}.cuckoo to zone ${env.CF_ZONE_ID} w/ target ${env.CF_TARGET}`);
     const cf = new Cloudflare({ key: env.CF_KEY, email: env.CF_EMAIL });
     const record = await cf.post<DNSRecord, AddDNSRecord>(
       `v4/zones/${env.CF_ZONE_ID}/dns_records`,

@@ -31,7 +31,7 @@ export class TaskDefinition extends Resource {
       executionRoleArn: this.execRoleArn,
       containerDefinitions: [{
         name: "webtop",
-        image: "linuxserver/webtop:ubuntu-xfce",
+        image: "linuxserver/webtop:amd64-ubuntu-xfce-version-c419e168",
         "cpu": 0,
         "portMappings": [
           {

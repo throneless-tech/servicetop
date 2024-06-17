@@ -34,7 +34,20 @@ id = "18750542e083458e89dfdc9494fce35c"
 # name = "my-queue"
 # zone_id = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
 
-# [env.production]
+[vars]
+AWS_ECS_CLUSTER_NAME = "cuckoo"
+AWS_ECS_EXECUTION_ROLE_ARN = "arn:aws:iam::455649480398:role/CuckooClusterTaskRole"
+AWS_ELB_LISTENER_ARN = "arn:aws:elasticloadbalancing:us-east-2:455649480398:listener/app/cuckoo/e9063e45bb68a96d/855f1905b9c3836e"
+AWS_ELB_SECURITY_GROUP_ID	= "sg-017228e39a0ee2e52"
+AWS_ELB_VPC_ID = "vpc-0e76c879279b3c143"
+AWS_REGION = "us-east-2"
+CF_EMAIL = "admin@resolute.work"
+CF_TARGET = "cuckoo-2099159911.us-east-2.elb.amazonaws.com"
+CF_ZONE_ID = "e85c93b8ac83aef2bd07f5d147b7e802"
+OXYLABS_USER = "cuckoo"
+PARENT_DOMAIN	= "cuckoo.resolute.work"
+PARENT_DOMAIN2 = "cuckoo.phantasm.group"
+WORKER_AUTH_KEY = "x-cuckoo-auth"
 # MY_VARIABLE = "production_value"
 
 # Needed secrets:

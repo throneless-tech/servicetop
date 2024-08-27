@@ -4,6 +4,7 @@ export class TaskDefinition extends Resource {
   constructor(
     protected readonly name: string,
     protected readonly region: string,
+    protected readonly version: string,
     private readonly fsid: string,
     private readonly execRoleArn: string,
     private readonly proxyUser: string,
@@ -31,7 +32,7 @@ export class TaskDefinition extends Resource {
       executionRoleArn: this.execRoleArn,
       containerDefinitions: [{
         name: "webtop",
-        image: "linuxserver/webtop:amd64-ubuntu-xfce-version-c419e168",
+        image: `linuxserver/webtop:${this.version}`,
         "cpu": 0,
         "portMappings": [
           {

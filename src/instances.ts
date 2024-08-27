@@ -17,6 +17,7 @@ import {
 import { CF, ServiceRequest } from "./worker";
 
 const NAME = generate({ words: 3 }).dashed;
+const VERSION = 'amd64-ubuntu-xfce-version-c419e168'
 
 async function doFetch(
   client: AwsClient,
@@ -65,6 +66,7 @@ router.post<ServiceRequest, CF>("/", async (
 ) => {
   const responses: any[] = [];
   const name = request.query.name || NAME;
+  const version = request.query.version || VERSION;
   console.log(`Starting deployment of instance '${name}''`);
 
   if (
@@ -229,6 +231,7 @@ us_wyoming`
       aws,
       new TaskDefinition(
         name,
+        version,
         env.AWS_REGION,
         fileSystem.FileSystemId,
         env.AWS_ECS_EXECUTION_ROLE_ARN,

@@ -40,8 +40,8 @@ async function doFetch(
 
 async function processResponse(response: Response) {
   const contentType: string | null = response.headers.get("Content-Type");
-  console.log("Processing Response with Content-Type:", contentType);
-  if (contentType?.includes("text/xml")) {
+
+  if (contentType?.includes("text/xml") || contentType?.includes("text/plain")) {
     const body = await response.text();
     if (!response.ok) {
       throw new Error(
@@ -67,7 +67,7 @@ router.post<ServiceRequest, CF>("/", async (
   const responses: any[] = [];
   const name = request.query.name || NAME;
   const version = request.query.version || VERSION;
-  console.log(`Starting deployment of instance '${name}''`);
+  console.log(`Hello! Starting deployment of instance '${name}' using this ${version} version'`);
 
   if (
     !(!request.query.exit || `us_alabama
@@ -227,12 +227,13 @@ us_wyoming`
 
   try {
     console.log("Deploying TaskDefinition");
+
     const taskDefinition = await doFetch(
       aws,
       new TaskDefinition(
         name,
-        version,
         env.AWS_REGION,
+        version,
         fileSystem.FileSystemId,
         env.AWS_ECS_EXECUTION_ROLE_ARN,
         env.OXYLABS_USER,
@@ -242,6 +243,7 @@ us_wyoming`
     ).then(processResponse);
     responses.push(taskDefinition);
   } catch (err) {
+    console.log("Error creating task definition.")
     return error(502, err as Error);
   }
 

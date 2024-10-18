@@ -10,6 +10,7 @@
 
 import { error, html, IRequest, json, Router, withParams } from "itty-router";
 import { router as instancesRouter } from "./instances";
+import { router as restartRouter } from "./restart"
 
 type Env = {
   AWS_ACCESS_ID: string;
@@ -56,6 +57,8 @@ router
   .all<ServiceRequest, CF>("*", withValidAuth)
   .all("*", withParams)
   .all("/api/v1/instances/*", instancesRouter.handle)
+  .all("/api/v1/restart/*", restartRouter.handle)
+  .all("/api/v1/update/*", restartRouter.handle)
   .get("/", () => {
     return html(
       `<a href="https://github.com/linuxserver/docker-webtop">Webtop</a> as a service.`,

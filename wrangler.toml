@@ -8,8 +8,9 @@ node_compat = true
 binding = "state"
 # preview_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 # id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-preview_id = "2ab5d88ae4b9402da70762724aa89089"
-id = "18750542e083458e89dfdc9494fce35c"
+#preview_id = "2ab5d88ae4b9402da70762724aa89089"
+#id = "18750542e083458e89dfdc9494fce35c"
+id = "ed65260251454b67a080f292743757c7"
 
 # # Durable Object binding - For more information: https://developers.cloudflare.com/workers/runtime-apis/durable-objects
 # [[durable_objects]]
@@ -46,7 +47,7 @@ CF_TARGET = "cuckoo-2099159911.us-east-2.elb.amazonaws.com"
 CF_ZONE_ID = "e85c93b8ac83aef2bd07f5d147b7e802"
 OXYLABS_USER = "cuckoo"
 PARENT_DOMAIN	= "cuckoo.resolute.work"
-PARENT_DOMAIN2 = "cuckoo.phantasm.group"
+#PARENT_DOMAIN2 = "cuckoo.phantasm.group"
 WORKER_AUTH_KEY = "x-cuckoo-auth"
 # MY_VARIABLE = "production_value"
 

@@ -51,7 +51,7 @@ export class TaskDefinition extends Resource {
             },
             {
               name: 'DOCKER_MODS',
-              value: 'ghcr.io/throneless-tech/st-mod-cuckoo',
+              value: 'ghcr.io/throneless-tech/docker-mods:webtop-oxylabs|ghcr.io/throneless-tech/docker-mods:webtop-proot',
             },
             {
               name: 'PUID',
@@ -76,6 +76,10 @@ export class TaskDefinition extends Resource {
             {
               name: 'OXYLABS_EXIT',
               value: this.proxyExit,
+            },
+            {
+              name: 'INSTALL_APPS',
+              value: 'telegram|chromium',
             },
           ],
           mountPoints: [

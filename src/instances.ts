@@ -116,10 +116,10 @@ us_wyoming`
   );
 }
 
-export const router = Router({ base: '/api/v1/instances' });
+export const router = Router({ base: '/api/v1' });
 
 router
-  .post<ServiceRequest, CF>('/', async (request, env) => {
+  .post<ServiceRequest, CF>('/instances', async (request, env) => {
     const responses: any[] = [];
     const name = request.query.name || NAME;
     const version = request.query.version || VERSION;
@@ -302,12 +302,10 @@ router
 
     return { name: name, responses: responses };
   })
-  .post<ServiceRequest, CF>('/:name/restart', async (request, env) => {
+  .post<ServiceRequest, CF>('/restart', async (request, env) => {
     const responses: any[] = [];
-    const name = request.params.name;
-    if (!name) return error(400);
-
-    console.log(`Restarting instance '${name}'`);
+    const { workspaces } = await request.json();
+    if (!workspaces.length) return error(400);
 
     const aws = new AwsClient({
       accessKeyId: env.AWS_ACCESS_ID,
@@ -315,71 +313,64 @@ router
     });
 
     try {
-      console.log('(Re)deploying Service');
-      const service = await doFetch(aws, new RestartService(name, env.AWS_REGION, env.AWS_ECS_CLUSTER_NAME)).then(processResponse);
-      responses.push(service);
+      for (let name of workspaces) {
+        console.log(`(Re)deploying Service ${name}`);
+        const service = await doFetch(aws, new RestartService(name, env.AWS_REGION, env.AWS_ECS_CLUSTER_NAME)).then(processResponse);
+        responses.push(name);
+      }
     } catch (err) {
       return error(502, err as Error);
     }
 
-    return { name: name, responses: responses };
+    return { responses: responses };
   })
-  .post<ServiceRequest, CF>('/:name/update/:version', async (request, env) => {
+  .post<ServiceRequest, CF>('/update', async (request, env) => {
     const responses: any[] = [];
-    const name = request.params.name;
-    const version = request.params.version;
-    if (!name || !version) return error(400);
-
-    if (!checkExit(request.query.exit)) {
-      return error(400, `Invalid proxy exit: ${request.query.exit}`);
-    }
-
-    console.log(`Updating instance '${name}' to version ${version}`);
+    const { workspaces, version } = await request.json();
+    if (!workspaces.length || !version) return error(400);
 
     const aws = new AwsClient({
       accessKeyId: env.AWS_ACCESS_ID,
       secretAccessKey: env.AWS_ACCESS_SECRET,
     });
 
-    let taskDefinition;
-    try {
-      console.log('Fetching most recent TaskDefinition');
-      taskDefinition = await doFetch(aws, new DescribeTaskDefinition(name, env.AWS_REGION)).then(processResponse);
-      responses.push(taskDefinition);
-    } catch (err) {
-      return error(502, err as Error);
-    }
-    const fileSystemId = taskDefinition.taskDefinition.volumes[0].efsVolumeConfiguration.fileSystemId;
+    for (let name of workspaces) {
+      console.log(`Updating instance '${name}' to version ${version}`);
+      let taskDefinition;
+      try {
+        console.log('Fetching most recent TaskDefinition');
+        taskDefinition = await doFetch(aws, new DescribeTaskDefinition(name, env.AWS_REGION)).then(processResponse);
 
-    console.log('FileSystemId:', fileSystemId);
+        const fileSystemId = taskDefinition.taskDefinition.volumes[0].efsVolumeConfiguration.fileSystemId;
+        console.log('FileSystemId:', fileSystemId);
+        const [{ value: exit }] = taskDefinition.taskDefinition.containerDefinitions[0].environment.filter(
+          ({ name, value }) => name === 'OXYLABS_EXIT',
+        );
+        console.log('OXYLABS_EXIT:', exit);
 
-    try {
-      console.log('Deploying new TaskDefinition');
-      const newTaskDefinition = await doFetch(
-        aws,
-        new TaskDefinition(
-          name,
-          env.AWS_REGION,
-          version,
-          fileSystemId,
-          env.AWS_ECS_EXECUTION_ROLE_ARN,
-          env.OXYLABS_USER,
-          env.OXYLABS_PASS,
-          request.query.exit,
-        ),
-      ).then(processResponse);
-      responses.push(newTaskDefinition);
-    } catch (err) {
-      return error(502, err as Error);
-    }
+        console.log('Deploying new TaskDefinition');
+        const newTaskDefinition = await doFetch(
+          aws,
+          new TaskDefinition(
+            name,
+            env.AWS_REGION,
+            version,
+            fileSystemId,
+            env.AWS_ECS_EXECUTION_ROLE_ARN,
+            env.OXYLABS_USER,
+            env.OXYLABS_PASS,
+            exit,
+          ),
+        ).then(processResponse);
 
-    try {
-      console.log('(Re)deploying Service');
-      const service = await doFetch(aws, new RestartService(name, env.AWS_REGION, env.AWS_ECS_CLUSTER_NAME)).then(processResponse);
-      responses.push(service);
-    } catch (err) {
-      return error(502, err as Error);
+        console.log('(Re)deploying Service');
+        const service = await doFetch(aws, new RestartService(name, env.AWS_REGION, env.AWS_ECS_CLUSTER_NAME)).then(processResponse);
+        responses.push(name);
+      } catch (err) {
+        console.log('Error:', err);
+        return error(502, err as Error);
+      }
     }
-    return { name: name, responses: responses };
+    return { responses: responses };
   })
   .all('*', () => error(404));

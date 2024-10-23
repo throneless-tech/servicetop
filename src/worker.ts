@@ -8,8 +8,8 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
-import { error, html, IRequest, json, Router, withParams } from "itty-router";
-import { router as instancesRouter } from "./instances";
+import { error, html, IRequest, json, Router, withParams } from 'itty-router';
+import { router as instancesRouter } from './instances';
 
 type Env = {
   AWS_ACCESS_ID: string;
@@ -46,24 +46,21 @@ const withValidAuth = (request: ServiceRequest, env: Env) => {
 
   if (psk !== env.WORKER_AUTH_VALUE) {
     // Incorrect key supplied. Reject the request.
-    return error(401, "Sorry, you have supplied an invalid key.");
+    return error(401, 'Sorry, you have supplied an invalid key.');
   }
 };
 
 const router = Router(); // Export a default object containing event handlers
 
 router
-  .all<ServiceRequest, CF>("*", withValidAuth)
-  .all("*", withParams)
-  .all("/api/v1/instances/*", instancesRouter.handle)
-  .get("/", () => {
-    return html(
-      `<a href="https://github.com/linuxserver/docker-webtop">Webtop</a> as a service.`,
-    );
+  .all<ServiceRequest, CF>('*', withValidAuth)
+  .all('*', withParams)
+  .all('/api/v1/*', instancesRouter.handle)
+  .get('/', () => {
+    return html(`<a href="https://github.com/linuxserver/docker-webtop">Webtop</a> as a service.`);
   })
-  .all("*", () => error(404));
+  .all('*', () => error(404));
 
 export default {
-  fetch: (request: Request, env: Env, ctx: ExecutionContext) =>
-    router.handle(request, env, ctx).then(json).catch(error),
+  fetch: (request: Request, env: Env, ctx: ExecutionContext) => router.handle(request, env, ctx).then(json).catch(error),
 };
